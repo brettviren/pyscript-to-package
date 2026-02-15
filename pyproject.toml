@@ -1,0 +1,19 @@
+[project]
+name = "pyscript-to-package"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Brett Viren", email = "brett.viren@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.readme]
+file = "README.org"
+content-type = "text/org"
+
+[project.scripts]
+pyscript-to-package = "pyscript_to_package.main:main"
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
