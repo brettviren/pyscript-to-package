@@ -32,6 +32,28 @@ def setup_umbrella(path):
     
     return pyproject_path
 
+def update_umbrella_deps_bin(pyproject_path, pkg_name, bin_name, git_url):
+    """Idempotently add dependency AND entry point to the umbrella."""
+    with open(pyproject_path, "r") as f:
+        data = tomlkit.load(f)
+
+    # 1. Add to dependencies
+    deps = data.get("project", {}).get("dependencies", [])
+    entry = f"{pkg_name} @ {git_url}"
+    if entry not in deps:
+        deps.append(entry)
+        data["project"]["dependencies"] = deps
+
+    # 2. Add to project.scripts (The Proxy Entry Point)
+    if "scripts" not in data["project"]:
+        data["project"]["scripts"] = {}
+    
+    # This maps 'bin-name' to 'pkg_name.main:main' inside the umbrella
+    data["project"]["scripts"][bin_name] = f"{pkg_name}.main:main"
+
+    with open(pyproject_path, "w") as f:
+        f.write(tomlkit.dumps(data))
+
 def update_umbrella_deps(pyproject_path, pkg_name, git_url):
     """Idempotently add the dependency to the umbrella pyproject.toml."""
     with open(pyproject_path, "r") as f:
@@ -113,6 +135,10 @@ def migrate(scripts, register, giturl_pattern):
         # 5. Git Init (Idempotent)
         if not (pkg_dir / ".git").exists():
             subprocess.run(["git", "init"], cwd=pkg_dir, check=True)
+            
+        if not (pkg_dir / ".gitignore").exists():
+            with open(pkg_dir / ".gitignore") as f:
+                f.write('*~\n')
             subprocess.run(["git", "add", "."], cwd=pkg_dir, check=True)
             subprocess.run(["git", "commit", "-m", "Initial migration"], cwd=pkg_dir, check=True)
 
@@ -120,7 +146,7 @@ def migrate(scripts, register, giturl_pattern):
         if register:
             umbrella_pp = setup_umbrella(register)
             git_url = giturl_pattern.format(repo=bin_name)
-            update_umbrella_deps(umbrella_pp, pkg_name, git_url)
+            update_umbrella_deps_bin(umbrella_pp, pkg_name, bin_name, git_url)
 
 if __name__ == "__main__":
     migrate()

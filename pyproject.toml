@@ -6,14 +6,18 @@ authors = [
     { name = "Brett Viren", email = "brett.viren@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "click>=8.3.1",
+    "tomlkit>=0.14.0",
+]
 
 [project.readme]
 file = "README.org"
 content-type = "text/org"
 
 [project.scripts]
-pyscript-to-package = "pyscript_to_package.main:main"
+pyscript-to-package = "pyscript_to_package.main:migrate"
+
 [build-system]
 requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
